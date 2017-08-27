@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vue.js</title>
+    <script src="https://cdn.staticfile.org/vue/2.2.6/vue.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script> -->
+    <!-- <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script> -->
+</head>
+<body>
+    <div id="app" @click="hello">
+        <img src="./images/Vue生命周期标注版本.png" alt="">
+        <img src="./images/Vue周期.png" alt="">
+        <p v-for="text in message">
+            {{ text.text }}
+        </p>
+    </div>
+
+    <!-- script -->
+    <script>
+        // vue中可以使用key属性来，声明这两个元素是完全独立的，不会被复用
+
+        // v-if 与 v-for 一起使用时，v-for 具有比 v-if 更高的优先级
+
+        new Vue({
+            el: '#app',
+            data: {
+                message: [
+                    { text: 'hello'},
+                    { text: 'world'}
+                ]
+            },
+            methods: {
+                hello: function () {
+                    Vue.set(this.message[0], 'text', 'world');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
