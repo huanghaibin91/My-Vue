@@ -11,12 +11,119 @@
 </head>
 <body>
     <div id="app">
-        
+        <div @click="increment">
+            <!-- <p>{{ count }}</p> -->
+            <!-- <p>{{ world }}</p> -->
+            <p>{{ count1 }}</p>
+            <p>{{ count2 }}</p>
+            <p>{{ count3 }}</p>
+            <p>{{ newWorld }}</p>
+        </div>
     </div>
 
     <!-- script -->
     <script>
-    
+        // 使用script链接安装vuex，vuex会注入到全局
+
+        // 如果在模块化构建系统中，请确保在开头调用了 Vue.use(Vuex) 
+        // Vuex使用单一状态树，用一个对象就包含了全部的应用层级状态,这个对象就是state，所以一个应用将仅仅只有一个store
+        const store = new Vuex.Store({ 
+            state: { 
+                count: 0,
+                world: 'world'
+            }, 
+            getters: {
+                // state作为第一个参数，还可以传入其它getter作为参数
+                newWorld: function (state) {
+                    return state.world.toUpperCase();
+                }
+            },
+            // 更改Vuex的store中的状态的唯一方法是提交mutation，每个mutation都有一个字符串的事件类型(type)和一个回调函数(handler)
+            // Mutations 需遵守 Vue 的响应规则使用 Vue.set(obj, 'newProp', 123)等响应规则
+            // mutation 必须是同步函数
+            mutations: { 
+                // state作为第一个参数，第二个参数是载荷，会在提交时传入
+                increment (state, n) {
+                    var amount = 1 || n.amount; 
+                    state.count += amount;
+                } 
+            },
+            // Action 类似于 mutation，不同在于：Action 提交的是 mutation，而不是直接变更状态。Action 可以包含任意异步操作。
+            // actions主要是处理异步操作
+            actions: {
+                // Action 函数接受一个与 store 实例具有相同方法和属性的context对象，所以可以通过context访问state和getters
+                // 但context并不是store本身，第二个参数是载荷用于传递参数
+                increment (context) {
+                    context.commit('increment');
+                }
+            }
+
+        });
+
+        // 创建vue实例
+        new Vue({
+            el: '#app',
+            data: {
+                message: 'hello'
+            },
+            // Vuex 通过 store 选项，提供了一种机制将状态从根组件『注入』到每一个子组件中（模块中需调用 Vue.use(Vuex)）
+            store,
+            // 从store中获取数据的最简单方法就是利用computed
+            // computed: {
+            //     count: function () {
+            //         return store.state.count;
+            //     }  
+            // },
+            // mapState辅助函数，在单独构建的版本中辅助函数为 Vuex.mapState,mapState 函数返回的是一个对象
+            // 另外getters、mutations、actions都有map辅助函数
+            // 在模块化中需要引入：import { mapState } from 'vuex'
+            // 当映射的计算属性的名称与 state 的子节点名称相同时，我们也可以给 mapState 传一个字符串数组
+            // computed: Vuex.mapState([ 
+            //     // 映射 this.count 为 store.state.count 
+            //     'count',
+            //     'world' 
+            // ]),
+            computed: {
+                // 利用对象展开运算符将mapState展开
+                ...Vuex.mapState({
+                    // 利用箭头函数
+                    count1: state => state.count,
+                    // 利用普通函数
+                    count2: function (state) {
+                        return state.count
+                    },
+                    // 利用字符串，传字符串参数 'count' 等同于 `state => state.count`
+                    count3: 'count',
+                }),
+                // 获取getters数据
+                newWorld: function () {
+                    return store.getters.newWorld;
+                }
+            },
+            methods: {
+                // increment: function () {
+                //     // 载荷大部分时间是一个对象，也可以是基本数据
+                //     var obj = {
+                //         amount: 3
+                //     }
+                //     // store.commit('increment', obj);
+                //     // 对象方式提交
+                //     store.commit({
+                //         type: 'increment',
+                //         amount: 5
+                //     })
+                // },
+                // 使用 mapMutations 辅助函数将组件中的 methods 映射为 store.commit 调用（需要在根节点注入 store）
+                // ...Vuex.mapMutations([
+                //     'increment'
+                // ]),
+                increment: function () {
+                    // Action 通过 store.dispatch 方法触发
+                    store.dispatch('increment');
+                }
+            }
+        });
+
     </script>
 </body>
 </html>

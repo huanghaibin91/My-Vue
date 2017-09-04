@@ -11,12 +11,130 @@
 </head>
 <body>
     <div id="app">
-        
+        <p>
+            <router-link tag="div" to="/foo">go to foo</router-link>
+            <router-link tag="p" to="/bar">go to bar</router-link>
+            <!-- 动态路由 -->
+            <p>下面是路由输出</p>
+            <router-link to="/user/foo">go to /user/foo</router-link>
+            <router-link to="/user/bar">go to /user/bar</router-link>
+            <!-- 使用命名路由时，传递路径和参数时to要使用v-bind -->
+            <router-link :to="{name: 'user', params: {id: 'bar'}}">go to /user/bar</router-link>
+            <router-link to="/user/bar/profile">go to /user/bar/profile</router-link>
+            <button @click="gotofoo">go to foo</button>
+        </p>
+        <!-- 有时候想同时（同级）展示多个视图，而不是嵌套展示时，命名视图就有用了 -->
+        <router-view></router-view>
+        <router-view name="two"></router-view>
+        <img src="./images/router-1.png" alt=""><br>
+        <img src="./images/router-2.png" alt=""><br>
     </div>
 
     <!-- script -->
     <script>
-    
+        // 利用script加载Vue-router，VueRouter自动注入全局
+        
+        // 0. 如果使用模块化机制编程，導入Vue和VueRouter，要调用 Vue.use(VueRouter) 
+        // 1. 定义（路由）组件。 可以从其他文件 import 进来，组件要先声明才能使用
+        const Foo = { 
+            template: '<div>foo</div>',
+            // 以下是组件内的导航钩子
+            beforeRouteEnter (to, from, next) { 
+                // 在渲染该组件的对应路由被 confirm 前调用 
+                // 不！能！获取组件实例 `this` 
+                // 因为当钩子执行前，组件实例还没被创建 
+            }, 
+            beforeRouteUpdate (to, from, next) { 
+                // 在当前路由改变，但是该组件被复用时调用 
+                // 举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候， 
+                // 由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。 
+                // 可以访问组件实例 `this` 
+            }, 
+            beforeRouteLeave (to, from, next) { 
+                // 导航离开该组件的对应路由时调用 
+                // 可以访问组件实例 `this` 
+            }
+        }; 
+        const Bar = { template: '<div>bar</div>' };
+        // 当匹配到一个路由时，参数值会被设置到 this.$route.params，可以在每个组件内使用
+        const User = { 
+            template: `
+                <div>
+                    <h3>User {{ $route.params.id }}</h3>
+                    <router-view></router-view>
+                </div>
+            `,
+            watch: { 
+                '$route' (to, from) {
+                    // 对路由变化作出响应... 
+                    console.log('路由变化了');
+                } 
+            }
+        };
+        const UserProfile = { template: '<div>Profile</div>' };
+        // 2. 定义路由 
+        // 每个路由应该映射一个组件。 其中"component" 可以是通过 Vue.extend() 创建的组件构造器，或者，只是一个组件配置对象。 
+        const routes = [ 
+            // 在默认路径中，默认视图加载组件Foo，命名视图two加载组件Bar
+            { path: '/', components: { default: Foo, two: Bar } },
+            // /a 的别名是 /b，意味着，当用户访问 /b 时，URL 会保持为 /b，但是路由匹配则为 /a，就像用户访问 /a 一样
+            { path: '/foo', component: Foo, alias: '/bar' }, 
+            // 设置了重定向redirect后path:'/bar'也将跳转到'/foo'
+            { path: '/bar', component: Bar, redirect: '/foo',  },
+            // 路由参数时，例如从 /user/foo 导航到 user/bar，原来的组件实例会被复用。因为两个路由都渲染同个组件，比起销毁再创建，
+            // 复用则显得更加高效。不过，这也意味着组件的生命周期钩子不会再被调用
+            { 
+                path: '/user/:id', 
+                // 过一个名称来标识一个路由显得更方便一些，命名路由跳转传递使用对象
+                name: 'user', 
+                component: User, 
+                children: [
+                    // 子路由path名称不以‘ / ’开头
+                    { path: 'profile', component: UserProfile }
+                ],
+                // 此路由独享的导航钩子
+                beforeEnter: (to, from, next) => { 
+                    // ... 
+                }
+            }
+        ];
+        // 3. 创建 router 实例，然后传 `routes` 配置，也可以直接在router中写路由配置对象
+        const router = new VueRouter({ 
+                routes  // （缩写）相当于 routes: routes 
+            });
+
+        // 全局导航钩子
+        router.beforeEach((to, from, next) => { 
+            // ... 
+            // to：route，即将要进入的目标路由对象
+            // next：route，当前导航正要离开的路由
+            // next，function，一定要确保要调用 next 方法，该方法有三种传入参数不同的情况：
+                // next(): 进行管道中的下一个钩子。如果全部钩子执行完了，则导航的状态就是 confirmed （确认的）。
+                // next(false): 中断当前的导航。如果浏览器的 URL 改变了（可能是用户手动或者浏览器后退按钮），
+                // 那么 URL 地址会重置到 from 路由对应的地址。
+                // next('/') 或者 next({ path: '/' }): 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。
+        });
+
+        // 4. 创建和挂载根实例。记得要通过 router 配置参数注入路由，从而让整个应用都有路由功能 
+        const app = new Vue({ 
+            router,
+            methods: {
+                // 除了使用 <router-link> 创建 a 标签来定义导航链接，我们还可以借助 router 的实例方法，通过编写代码来实现
+                // router.replace(location)跟 router.push 很像，唯一的不同就是，它不会向 history 添加新记录，
+                // 而是跟它的方法名一样 —— 替换掉当前的 history 记录
+                // router.go(n)这个方法的参数是一个整数，意思是在 history 记录中向前或者后退多少步，类似 window.history.go(n)
+                gotofoo: function () {
+                    router.push({
+                        path: '/foo'
+                    })
+                }
+            }
+        }).$mount('#app') // 现在，应用已经启动了！
+
+        // HTML5 history模式，需要后设置好才可以用，不然会返回404
+
+        // 滚动行为，只有在HTML5 history模式下才可以使用
+
     </script>
 </body>
 </html>
