@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.staticfile.org/vue/2.2.6/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script>
+    <title>Vue-Render</title>
+</head>
+
+<body>
+    <div id="app">
+
+    </div>
+
+    <!-- script -->
+    <script>
+        // render函数接收一个createElement方法
+        // createElement方法,createElement(tag,{},[])或者createElement(tag,{},String)类似，
+        // 不过接收的参数不一样,后面两个参数都是可选的，第二个参数{}其实就一个数据对象，代表用在该节点的属性，
+        // []可以看出来是表示该节点下面还有其他的节点
+
+        // @returns {VNode}，createElement返回“虚拟节点 (Virtual DOM)”，也常简写它为“VNode”
+        createElement(
+            // {String | Object | Function}
+            // 一个 HTML 标签字符串，组件选项对象，或者一个返回值类型为 String/Object 的函数，必要参数
+            'div',
+            // {Object}
+            // 一个包含模板相关属性的数据对象
+            // 这样，您可以在 template 中使用这些属性。可选参数。
+            {
+                // 创建元素的属性
+                // 和`v-bind:class`一样的 API
+                'class': {
+                    foo: true,
+                    bar: false
+                },
+                // 和`v-bind:style`一样的 API
+                style: {
+                    color: 'red',
+                    fontSize: '14px'
+                },
+                // 正常的 HTML 特性
+                attrs: {
+                    id: 'foo'
+                },
+                // 事件监听器基于 `on`
+                // 所以不再支持如 `v-on:keyup.enter` 修饰器
+                // 需要手动匹配 keyCode。
+                on: {
+                    click: this.clickHandler
+                },
+                // 仅对于组件，用于监听原生事件，而不是组件内部使用 `vm.$emit` 触发的事件。
+                nativeOn: {
+                    click: this.nativeClickHandler
+                },
+            },
+            // {String | Array}，参数是String就是文本节点，Array就是用createElement创建新的子元素节点
+            // 子节点 (VNodes)，由 `createElement()` 构建而成，
+            // 或使用字符串来生成“文本节点”。可选参数。
+            [
+                '先写一些文字', // 子节点，文本节点
+                createElement('h1', '一则头条'), // 子节点，元素节点
+                createElement(MyComponent, { // 子节点，组件元素节点
+                    props: {
+                        someProp: 'foobar'
+                    }
+                })
+            ]
+        )
+
+        Vue.component('heading', {
+            render: function (createElement) {
+                return createElement(
+                    'h' + this.level, // tag name 标签名称，可以是HTML标签或者组件
+                    {
+                        // 和`v-bind:class`一样的 API 
+                        'class': {
+                            foo: true,
+                            bar: false
+                        },
+                        // 和`v-bind:style`一样的 API 
+                        style: {
+                            color: 'red',
+                            fontSize: '24px'
+                        },
+                        // 正常的 HTML 特性 
+                        attrs: {
+                            id: 'foo'
+                        },
+                        // 组件 props 
+                        props: {
+                            myProp: 'bar'
+                        },
+                        // DOM 属性 
+                        domProps: {
+                            innerHTML: 'baz'
+                        },
+                        // 事件监听器基于 "on" 
+                        // 所以不再支持如 v-on:keyup.enter 修饰器 ，使用阻止冒泡之类的可以使用原生的JS方法替代修饰器
+                        // 需要手动匹配 keyCode。 
+                        // .passive、.capture 和 .once事件修饰符, Vue 提供了相应的前缀可以用于 on
+                        on: {
+                            click: this.clickHandler
+                        },
+                        // 仅对于组件，用于监听原生事件，而不是组件使用 vm.$emit 触发的事件。 
+                        nativeOn: {
+                            click: this.nativeClickHandler
+                        },
+                        // 自定义指令. 注意事项：不能对绑定的旧值设值
+                        // Vue 会为您持续追踨 
+                        directives: [{
+                            name: 'my-custom-directive',
+                            value: '2',
+                            expression: '1 + 1',
+                            arg: 'foo',
+                            modifiers: {
+                                bar: true
+                            }
+                        }],
+                        // Scoped slots in the form of
+                        // { name: props => VNode | Array<VNode> }
+                        scopedSlots: {
+                            default: props => createElement('span', props.text)
+                        },
+                        // 如果子组件有定义 slot 的名称 
+                        slot: 'name-of-slot',
+                        // 其他特殊顶层属性 
+                        key: 'myKey',
+                        ref: 'myRef'
+                    },
+                    this.$slots.default // 子组件中的阵列，当你不使用 slot 属性向组件中传递内容时
+                    // 这些子元素被存储在组件实例中的 $slots.default中，会创建一个没命名的slot插槽
+                    // 命名插槽使用this.$slot.name，name为插槽名字
+                );
+            },
+            props: {
+                level: {
+                    type: Number,
+                    required: true
+                }
+            }
+        });
+
+        // 组件树中的所有 VNodes 必须是唯一的
+        render: function (createElement) {
+            var myParagraphVNode = createElement('p', 'hi')
+            return createElement('div', [
+                // 错误-重复的 VNodes
+                myParagraphVNode,
+                myParagraphVNode // 这里使用了同一个节点两次
+            ])
+        }
+        // 需要重复很多次的元素/组件，你可以使用工厂函数来实现，就是在子元素数组中重复使用createElement创建子元素，保证每个
+        // VNode都不会重复
+        render: function (createElement) {
+            return createElement('div',
+                Array.apply(null, {
+                    length: 20
+                }).map(function () {
+                    return createElement('p', 'hi')
+                })
+            )
+        }
+        
+        // 函数式组件
+        Vue.component('my-component', {
+            functional: true,
+            // 为了弥补缺少的实例
+            // 提供第二个参数作为上下文
+            render: function (createElement, context) {
+                // ...
+            },
+            // Props 可选
+            props: {
+                // ...
+            }
+        })
+    </script>
+</body>
+
+</html>
