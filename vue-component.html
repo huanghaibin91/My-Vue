@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vue-Component</title>
+    <script src="https://cdn.staticfile.org/vue/2.2.6/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script>
+</head>
+<body>
+    <div id="app" @click="sayRef">
+        {{ message }}
+        <!-- 在父组件作用域中自定义事件拥有触发父作用域中的事件，子作用域的数据会传递到绑定的函数中 -->
+        <!-- 组件的根元素上监听一个父组件的原生事件。可以使用 v-on 的修饰符 .native -->
+        <hello ref="childComponent" :text="message" @childreverse="parentreverse" @click.native="sayHi"></hello>
+        <!-- 在实例声明之后声明的组件不可用 -->
+        <world></world> 
+        <!-- 动态组件 -->
+        <component :is="hi"></component>
+    </div>
+
+    <!-- script -->
+    <script>
+        // 全局组件
+        Vue.component('component-name', {
+            template: `<div>hello world</div>` 
+        });
+
+        // 父子组件的关系可以总结为 prop 向下传递，事件向上传递。父组件通过 prop 给子组件下发数据，子组件通过事件给父组件发送消息
+
+        // 局部组件，局部组件需要在实例中绑定才可以使用，且只有绑定了的实例能够使用
+        // 组件命名规则，W3C自定义标签命名规范小写加短杠
+        // 组件要先于vue实例声明之前声明，才可用
+        var hello = {
+            // 子组件绑定一个点击事件，点击后想父组件传递数据
+            template: `<div @click="reverse">  
+                    hello {{ text }}
+                    <slot></slot> 
+                </div>`,
+            props: { // 父组件向子组件传递数据
+                text: {
+                    type: String // props验证，传入的props类型是字符串
+                }
+            },
+            data: function () { // 在组件中，data 必须是函数
+                return {
+                    message: 'hello world'
+                }
+            },
+            methods: {
+                // 需要在子组件绑定事件，触发后将数据传递出去
+                reverse: function () {
+                    this.$emit('childreverse', this.message); // 子组件向父组件传递数据
+                }
+            }
+        }
+
+        var hi = {
+            template: '<div>hi world</div>'
+        };
+        // 声明vue实例
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                message: 'world',
+                currentView: 'hi'
+            },
+            // 组件
+            components: {
+                'hello': hello, // 可用
+                'hi': hi,
+                'world': world // 不可用
+            },
+            methods: {
+                parentreverse: function (meg) {
+                    console.log(meg);
+                    this.message = meg;
+                },
+                sayHi: function () {
+                    alert('HI');
+                },
+                sayRef: function () {
+                    console.log(this.$refs.childComponent);
+                }
+            }
+        });
+
+        // 组件在vue实例声明之后声明，不可用
+        var world = {
+            template: '<div> world </div>'
+        }
+
+        // slot，组件内容分发，slot是在父作用域中编译，使用的是父作用域的数据
+        // 作用域插槽，让子组件可以在父组件进行分发时获取自己的数据，父级中，具有特殊特性 slot-scope 的 <template> 
+        // 元素必须存在，表示它是作用域插槽的模板
+    </script>
+</body>
+</html>

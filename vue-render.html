@@ -168,9 +168,10 @@
         
         // 函数式组件
         Vue.component('my-component', {
+            // 标记组件为 functional，这意味它是无状态 (没有 data)，无实例 (没有 this 上下文)
             functional: true,
             // 为了弥补缺少的实例
-            // 提供第二个参数作为上下文
+            // 提供第二个参数作为上下文，锚点标题组件的 render 函数之间简单更新增加 context 参数
             render: function (createElement, context) {
                 // ...
             },

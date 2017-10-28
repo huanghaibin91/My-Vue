@@ -5,54 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Vue.js</title>
+    <title>Vue-Basic</title>
     <script src="https://cdn.staticfile.org/vue/2.2.6/vue.min.js"></script>
     <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script>
     <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script>
 </head>
 
 <body>
-    <div id="app" @click="hello($event)"> 
-    <!-- vue中通过$event传入事件对象 -->
+    <div id="app" @click="hello($event)">
+        <!-- vue中通过$event传入事件对象 -->
         <img src="./images/Vue生命周期标注版本.png" alt="">
-        <img src="./images/Vue周期.png" alt=""> {{ message[0].text }}
-        <hello v-bind:text="message[1].text" @reverse="hello">
-            <p>{{ message[0].text.split('').reverse().join('') }}</p>
-        </hello>
-        <world></world>
-        <heading :level="1">hello world</heading>
+        <img src="./images/Vue周期.png" alt="">
+        <!-- v-once 指令，你也能执行一次性地插值，当数据改变时，插值处的内容不会更新 -->
+        {{ message[0].text }}
         <ul @click.stop="push">
             <li v-for="item in list">{{item}}</div>
-        </ul>
+    </ul>
     </div>
 
     <!-- script -->
     <script>
         // vue中可以使用key属性来，声明这两个元素是完全独立的，不会被复用
 
-        // v-if 与 v-for 一起使用时，v-for 具有比 v-if 更高的优先级
+        // 在HTML中的属性名称不区分大小写，写在JS用驼峰在HTML中得转化为 - 链接的写法
 
-        // 组件命名规则，W3C自定义标签命名规范小写加短杠
-        // 组件要先于vue实例声明之前声明，才可用
-        var hello = {
-            template: `<div @click="reverse"> 
-                hello {{ text }}
-                <slot></slot> 
-            </div>`,
-            props: {
-                text: {
-                    type: Number
-                }
-            },
-            data: {
-                message: 'hello world'
-            },
-            methods: {
-                reverse: function () {
-                    this.$emit('reverse', this.message);
-                }
-            }
-        }
+        // v-if 与 v-for 一起使用时，v-for 具有比 v-if 更高的优先级
 
         // 声明vue实例
         var vm = new Vue({
@@ -122,11 +99,6 @@
                 console.log("data   : " + this.$data);
                 console.log("message: " + this.message)
             },
-            // 组件
-            components: {
-                'hello': hello, // 可用
-                'world': world // 不可用
-            },
             // 方法
             methods: {
                 hello: function (mes, event) {
@@ -145,16 +117,57 @@
                         console.log('v-for渲染已经完成')
                     });
                 }
+            },
+            // 计算属性
+            computed: {
+                totalMessage: function () {
+                    return this.message[0].text + ' ' + this.message[1].text;
+                }
+            },
+            // 观察者
+            watch: {
+                totalMessage: function (newValue, oldValue) {
+                    console.log(newValue);
+                },
+                // 深度 watcher
+                c: {
+                    handler: function (val, oldVal) { 
+                        /* ... */ 
+                    },
+                    // 设置deep：true，监听c里面的handler属性
+                    deep: true
+                },
             }
         });
-        // 组件在vue实例声明之后声明，不可用
-        var world = {
-            template: '<div> world </div>'
-        }
 
-        // slot，组件内容分发，slot是在父作用域中编译
-        // 作用域插槽，让子组件可以在父组件进行分发时获取自己的数据
-        
+        // 使用实例属性额方法可以在vue实例外操作vue实例
+        vm.message // 可以访问data的属性和computed的属性
+        vm.$data === data // => true
+        vm.$el === document.getElementById('qpp') // => true
+        // $watch 是一个实例方法
+        vm.$watch('a', function (newValue, oldValue) { // 跟在vue实例中声明watch一样
+            // 这个回调将在 `vm.a` 改变后调用
+        })
+
+        // v-if条件渲染
+        // 如果渲染多个元素，就<template>元素当做不可见的包裹元素，并在上面使用v-if。最终的渲染结果将不包含<template>元素
+        // <template v-if="ok">
+        //     <h1>Title</h1>
+        //     <p>Paragraph</p>
+        // </template>
+        // 这种写法也可以用于v-for循环创建多个元素，
+        // <ul>
+        //     <template v-for="item in items"> // 每次循环会创建两个li元素
+        //         <li>{{ item.msg }}</li>
+        //         <li class="divider"></li>
+        //     </template>
+        // </ul>
+        // 使用v-if切换渲染元素是，如果条件都会有相同的元素，需要给元素添加key，这样就不会重复渲染
+        // v-show 不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换
+
+        // 数组触发视图更新需要用数组的变异方法push()、pop()、shift()、unshift()、splice()、sort()、reverse()
+        // 如果使用非变异方法，可以用一个新数组替换原数组 ，可以触发视图更新
+        // Vue.set(object, key, value) 方法向嵌套对象添加响应式属性
 
         // transition中的appear是在transition第一次渲染的时候起作用
 
@@ -164,6 +177,12 @@
 
         // render函数接收一个createElement方法
         // createElement方法
+
+        // Vue 不能检测到对象属性的添加或删除。由于 Vue 会在初始化实例时对属性执行 getter/setter 转化过程，
+        // 所以属性必须在 data 对象上存在才能让 Vue 转换它，这样才能让它是响应的
+
+        // Vue 不允许在已经创建的实例上动态添加新的根级响应式属性 ,
+        // 可以使用 Vue.set(object, key, value) 方法将响应属性添加到嵌套的对象上
     </script>
 </body>
 

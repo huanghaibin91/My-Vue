@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vue-Other</title>
+    <script src="https://cdn.staticfile.org/vue/2.2.6/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+
+    </div>
+
+    <!-- script -->
+    <script>
+        // 混合 (mixins) 是一种分发 Vue 组件中可复用功能的非常灵活的方式。混合对象可以包含任意组件选项。
+        // 以组件使用混合对象时，所有混合对象的选项将被混入该组件本身的选项
+
+        // 使用全局混合对象，将会影响到所有之后创建的 Vue 实例，一般用于插件避免重复引用
+        Vue.mixin({
+            created: function () {
+                var myOption = this.$options.myOption
+                if (myOption) {
+                    console.log(myOption)
+                }
+            }
+        });
+
+        // 定义一个局部混合对象，需要实例引用才会起作用   
+        var myMixin = {
+            // 同名钩子函数将混合为一个数组，因此都将被调用。另外，混合对象的 钩子将在组件自身钩子之前调用
+            created: function () {
+                this.hello()
+            },
+            // 值为对象的选项，例如 methods, components和directives，将被混合为同一个对象。两个对象键名冲突时，
+            // 取组件对象的键值对
+            methods: {
+                hello: function () {
+                    console.log('hello from mixin!')
+                }
+            }
+        }
+        // 定义一个使用混合对象的组件
+        var Component = Vue.extend({
+            mixins: [myMixin]
+        })
+        var component = new Component() // => "hello from mixin!"
+
+        // 注册一个全局自定义指令 v-focus
+        Vue.directive('focus', {
+            // 当绑定元素插入到 DOM 中。
+            inserted: function (el) {
+                // 聚焦元素
+                el.focus()
+            }
+        })
+
+        var vm = new Vue({
+            el: '#app',
+            // 使用混合对象
+            mixins: [myMixin],
+            directives: {
+                focus: {
+                    // bind：只调用一次，指令第一次绑定到元素时调用，用这个钩子函数可以定义一个在绑定时执行一次的初始化动作。
+                    // inserted：被绑定元素插入父节点时调用 (父节点存在即可调用，不必存在于 document 中)。
+                    // update：所在组件的 VNode 更新时调用，但是可能发生在其孩子的 VNode 更新之前。指令的值可能发生了改变也可能
+                    // 没有。但是你可以通过比较更新前后的值来忽略不必要的模板更新 (详细的钩子函数参数见下)。
+                    // componentUpdated：所在组件的 VNode 及其孩子的 VNode 全部更新时调用。
+                    // unbind：只调用一次，指令与元素解绑时调用
+                    // 钩子函数被赋予了以下参数：el, binding, vnode, oldVnode
+                    // 指令的定义
+                    inserted: function (el) {
+                        el.focus()
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
