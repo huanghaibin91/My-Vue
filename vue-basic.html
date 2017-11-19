@@ -9,9 +9,15 @@
     <script src="https://cdn.staticfile.org/vue/2.2.6/vue.min.js"></script>
     <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script>
     <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script>
+    <style>
+        .active {
+            color: red;
+        }
+    </style>
 </head>
 
 <body>
+    <img src="./images/vue-order.png" alt=""><br>
     <div id="app" @click="hello($event)">
         <!-- vue中通过$event传入事件对象 -->
         <img src="./images/Vue生命周期标注版本.png" alt="">
@@ -19,9 +25,16 @@
         <!-- v-once 指令，你也能执行一次性地插值，当数据改变时，插值处的内容不会更新 -->
         {{ message[0].text }}
         <ul @click.stop="push">
-            <li v-for="item in list">{{item}}</div>
-    </ul>
+            <li v-for="item in list">{{ item }}</li>
+        </ul>
     </div>
+    <!-- v-bind绑定类名，传入对象，对象键为类名，值是布尔值，判断是否绑定类名，不符合JS写法的类名用引号包裹 -->
+    <!-- 传入数组,数组元素为类名 -->
+    <p v-bind:class="{active: activeFlag}">
+        active
+    </p>
+    <!-- 当有value时，选中checked会绑定value，费则checked为布尔值，表示是否选中 -->
+    <input type="checkbox" id="checkbox" v-model="checked">
 
     <!-- script -->
     <script>
@@ -30,6 +43,9 @@
         // 在HTML中的属性名称不区分大小写，写在JS用驼峰在HTML中得转化为 - 链接的写法
 
         // v-if 与 v-for 一起使用时，v-for 具有比 v-if 更高的优先级
+        // v-if与v-else中有相同的元素，如果想不复用的话，就给元素绑定个key
+        // v-if 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建
+        // v-if 也是惰性的：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块
 
         // 声明vue实例
         var vm = new Vue({
@@ -40,9 +56,10 @@
                     },
                     {
                         text: 'world'
-                    }
-                ],
+                    }],
                 list: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                activeFlag: true,
+                checked: '',
             },
             // 生命周期函数
             beforeCreate: function () {
@@ -101,6 +118,7 @@
             },
             // 方法
             methods: {
+                // 需要在内联语句处理器中访问原始的 DOM 事件。可以用特殊变量 $event 把它传入方法
                 hello: function (mes, event) {
                     Vue.set(this.message[0], 'text', 'world');
                     console.log(mes);
@@ -120,8 +138,20 @@
             },
             // 计算属性
             computed: {
+                // 计算属性是基于它们的依赖进行缓存的。计算属性只有在它的相关依赖发生改变时才会重新求值
                 totalMessage: function () {
                     return this.message[0].text + ' ' + this.message[1].text;
+                },
+                // 计算属性默认只有 getter ，不过在需要时你也可以提供一个 setter 
+                fullName: {
+                    // getter
+                    get: function () {
+                        return this.message;
+                    },
+                    // setter
+                    set: function (newValue) {
+                        this.message = newValue;
+                    }
                 }
             },
             // 观察者
@@ -131,8 +161,8 @@
                 },
                 // 深度 watcher
                 c: {
-                    handler: function (val, oldVal) { 
-                        /* ... */ 
+                    handler: function (val, oldVal) {
+                        /* ... */
                     },
                     // 设置deep：true，监听c里面的handler属性
                     deep: true
@@ -142,7 +172,7 @@
 
         // 使用实例属性额方法可以在vue实例外操作vue实例
         vm.message // 可以访问data的属性和computed的属性
-        vm.$data === data // => true
+        // vm.$data === data // => true
         vm.$el === document.getElementById('qpp') // => true
         // $watch 是一个实例方法
         vm.$watch('a', function (newValue, oldValue) { // 跟在vue实例中声明watch一样

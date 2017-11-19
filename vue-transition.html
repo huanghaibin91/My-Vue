@@ -28,6 +28,7 @@
 </head>
 
 <body>
+    <img src="./images/transition.png" alt=""><br>
     <div id="app">
         <button v-on:click="show = !show">
             Toggle
@@ -45,7 +46,9 @@
             为每个子元素都添加过渡动画 -->
         <!-- transition-group会被实际渲染成一个元素 -->
         <!-- 可以动态绑定name值，让元素触发不同的过渡效果，v-bind:name -->
-        <transition-group name="list" tag="p"> 
+        <!-- v-move 特性，它会在元素的改变定位的过程中应用。像之前的类名一样，可以通过 name 属性来自定义前缀，也可以通过 
+        move-class 属性手动设置 -->
+        <transition-group :name="list" tag="p"> 
             <!-- 内部元素 总是需要 提供唯一的 key 属性值 -->
             <span v-for="item in items" v-bind:key="item" class="list-item">
                 {{ item }}

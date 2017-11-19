@@ -32,10 +32,16 @@
                 count: 0,
                 world: 'world'
             }, 
+            // 如果多个子组件需要对state的数据进行相同处理获取数据，那么使用getters对state数据进行处理后方便多个组件使用
             getters: {
                 // state作为第一个参数，还可以传入其它getter作为参数
-                newWorld: function (state) {
+                newWorld: function (state, getters) {
                     return state.world.toUpperCase();
+                },
+                // 让 getter 返回一个函数，来实现给 getter 传参，返回一个函数调用时再传入参数
+                // store.getters.getTodoById(2)，这样会将2作为参数传入使用
+                getTodoById: (state, getters) => (id) => {
+                    return state.todos.find(todo => todo.id === id)
                 }
             },
             // 更改Vuex的store中的状态的唯一方法是提交mutation，每个mutation都有一个字符串的事件类型(type)和一个回调函数(handler)
@@ -52,9 +58,16 @@
             // actions主要是处理异步操作
             actions: {
                 // Action 函数接受一个与 store 实例具有相同方法和属性的context对象，所以可以通过context访问state和getters
-                // 但context并不是store本身，第二个参数是载荷用于传递参数
+                // 但context并不是store本身，第二个参数是载荷用于传递参数，context的存在让actions中可以分发其它actions
+                // 如获取state数据，就使用context.state
                 increment (context) {
-                    context.commit('increment');
+                    setTimeout(function () {
+                        context.commit('increment'); // actions可以进行异步操作
+                    }, 5000);
+                },
+                // 通过对象解构提取context的commit方法，这样就不用多写context简化代码
+                increment ({ commit, state }) {
+                    commit('increment')
                 }
             }
 
@@ -84,17 +97,26 @@
             //     'world' 
             // ]),
             computed: {
-                // 利用对象展开运算符将mapState展开
+                // 利用对象展开运算符将mapState展开，mapGetters与mapState使用一致
                 ...Vuex.mapState({
-                    // 利用箭头函数
+                    // 利用箭头函数，实例属性count1指向store.state,count
                     count1: state => state.count,
-                    // 利用普通函数
+                    // 利用普通函数，可以将store的数据和vue实例的数据结合使用
                     count2: function (state) {
-                        return state.count
+                        return state.count + this.message;
                     },
                     // 利用字符串，传字符串参数 'count' 等同于 `state => state.count`
+                    // count3是vue实例使用的名称，count是state中名称
                     count3: 'count',
                 }),
+                // 当映射的计算属性的名称与 state 的子节点名称相同时，我们也可以给 mapState 传一个字符串数组，会使用
+                // store中的同名属性
+                // ... 对象展开运算符将数据混入到vue实例的computed中使用
+                ...Vuex.mapState([
+                    'count1',
+                    'count2',
+                    'count3'
+                ]),
                 // 获取getters数据
                 newWorld: function () {
                     return store.getters.newWorld;
@@ -114,13 +136,19 @@
                 //     })
                 // },
                 // 使用 mapMutations 辅助函数将组件中的 methods 映射为 store.commit 调用（需要在根节点注入 store）
+                // 映射到方法的mutations使用会直接出发commit
+                // ...Vuex.mapMutations({
+                //     add: 'increment' // 将 `this.add()` 映射为 `this.$store.commit('increment')`
+                // })
                 // ...Vuex.mapMutations([
-                //     'increment'
+                //     'increment',
+                //     'incrementBy' // 将 `this.incrementBy(amount)` 映射为 `this.$store.commit('incrementBy', amount)`
                 // ]),
                 increment: function () {
                     // Action 通过 store.dispatch 方法触发
                     store.dispatch('increment');
                 }
+                // mapActions与mapMutations一致
             }
         });
 

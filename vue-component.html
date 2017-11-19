@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <script src="https://cdn.staticfile.org/vuex/2.3.0/vuex.min.js"></script>
     <script src="https://cdn.staticfile.org/vue-router/2.4.0/vue-router.min.js"></script>
 </head>
+
 <body>
     <div id="app" @click="sayRef">
         {{ message }}
@@ -16,7 +18,7 @@
         <!-- 组件的根元素上监听一个父组件的原生事件。可以使用 v-on 的修饰符 .native -->
         <hello ref="childComponent" :text="message" @childreverse="parentreverse" @click.native="sayHi"></hello>
         <!-- 在实例声明之后声明的组件不可用 -->
-        <world></world> 
+        <world></world>
         <!-- 动态组件 -->
         <component :is="hi"></component>
     </div>
@@ -25,7 +27,7 @@
     <script>
         // 全局组件
         Vue.component('component-name', {
-            template: `<div>hello world</div>` 
+            template: `<div>hello world</div>`
         });
 
         // 父子组件的关系可以总结为 prop 向下传递，事件向上传递。父组件通过 prop 给子组件下发数据，子组件通过事件给父组件发送消息
@@ -42,6 +44,35 @@
             props: { // 父组件向子组件传递数据
                 text: {
                     type: String // props验证，传入的props类型是字符串
+                },
+                // 基础类型检测 (`null` 指允许任何类型)
+                propA: Number,
+                // 可能是多种类型
+                propB: [String, Number],
+                // 必传且是字符串
+                propC: {
+                    type: String,
+                    required: true
+                },
+                // 数值且有默认值
+                propD: {
+                    type: Number,
+                    default: 100
+                },
+                // 数组/对象的默认值应当由一个工厂函数返回
+                propE: {
+                    type: Object,
+                    default: function () {
+                        return {
+                            message: 'hello'
+                        }
+                    }
+                },
+                // 自定义验证函数
+                propF: {
+                    validator: function (value) {
+                        return value > 10
+                    }
                 }
             },
             data: function () { // 在组件中，data 必须是函数
@@ -97,4 +128,5 @@
         // 元素必须存在，表示它是作用域插槽的模板
     </script>
 </body>
+
 </html>
