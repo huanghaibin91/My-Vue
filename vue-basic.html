@@ -25,14 +25,17 @@
         <!-- v-once 指令，你也能执行一次性地插值，当数据改变时，插值处的内容不会更新 -->
         {{ message[0].text }}
         <ul @click.stop="push">
-            <li v-for="item in list">{{ item }}</li>
+            <!-- 如果想要循环创建的每个元素不复用，加上key属性 -->
+            <li v-for="item in list" :key="item">{{ item }}</li>
         </ul>
     </div>
     <!-- v-bind绑定类名，传入对象，对象键为类名，值是布尔值，判断是否绑定类名，不符合JS写法的类名用引号包裹 -->
     <!-- 传入数组,数组元素为类名 -->
-    <p v-bind:class="{active: activeFlag}">
+    <!-- v-bind绑定style，传入对象，就是样式对象，如果是数组，数组元素应是对象，会合并多个数组元素对象作为style对象 -->
+    <p v-bind:class="{active: activeFlag, 'one-active': activeFlag}" v-bind:style="{fontSize: '20px', color: 'red'}">
         active
     </p>
+    <p v-bind:class="['active', 'one-active']" v-bind:style="{fontSize: '20px', color: 'red'}"></p>
     <!-- 当有value时，选中checked会绑定value，费则checked为布尔值，表示是否选中 -->
     <input type="checkbox" id="checkbox" v-model="checked">
 
@@ -49,8 +52,8 @@
 
         // 声明vue实例
         var vm = new Vue({
-            el: '#app',
-            data: {
+            el: '#app', // vue实例挂载的元素
+            data: { // data对象，数据存放
                 message: [{
                         text: 'hello'
                     },
@@ -77,42 +80,36 @@
             beforeMount: function () {
                 console.group('beforeMount 挂载前状态');
                 console.log("el     : " + (this.$el)); //已被初始化 
-                console.log(this.$el);
                 console.log("data   : " + this.$data); //已被初始化  
                 console.log("message: " + this.message); //已被初始化  
             },
             mounted: function () {
                 console.group('mounted 挂载结束状态');
                 console.log("el     : " + this.$el); //已被初始化 
-                console.log(this.$el);
                 console.log("data   : " + this.$data); //已被初始化 
                 console.log("message: " + this.message); //已被初始化 
             },
             beforeUpdate: function () {
                 console.group('beforeUpdate 更新前状态');
                 console.log("el     : " + this.$el);
-                console.log(this.$el);
                 console.log("data   : " + this.$data);
                 console.log("message: " + this.message);
             },
             updated: function () {
                 console.group('updated 更新完成状态');
                 console.log("el     : " + this.$el);
-                console.log(this.$el);
                 console.log("data   : " + this.$data);
                 console.log("message: " + this.message);
             },
             beforeDestroy: function () {
                 console.group('beforeDestroy 销毁前状态');
                 console.log("el     : " + this.$el);
-                console.log(this.$el);
                 console.log("data   : " + this.$data);
                 console.log("message: " + this.message);
             },
             destroyed: function () {
                 console.group('destroyed 销毁完成状态');
                 console.log("el     : " + this.$el);
-                console.log(this.$el);
                 console.log("data   : " + this.$data);
                 console.log("message: " + this.message)
             },
@@ -144,6 +141,7 @@
                 },
                 // 计算属性默认只有 getter ，不过在需要时你也可以提供一个 setter 
                 fullName: {
+                    // get、set需要一个中间值，不能直接使用计算属性名
                     // getter
                     get: function () {
                         return this.message;
@@ -172,6 +170,9 @@
 
         // 使用实例属性额方法可以在vue实例外操作vue实例
         vm.message // 可以访问data的属性和computed的属性
+
+        // Vue实例暴露了一些有用的实例属性与方法。它们都有前缀 $，以便与用户定义的属性区分开来
+        // vue实例属性设置在vue原型上，每个vue实例都包含这些方法和属性
         // vm.$data === data // => true
         vm.$el === document.getElementById('qpp') // => true
         // $watch 是一个实例方法
@@ -179,6 +180,8 @@
             // 这个回调将在 `vm.a` 改变后调用
         })
 
+        // v-show，带有 v-show 的元素始终会被渲染并保留在 DOM 中。v-show 只是简单地切换元素的 CSS 属性 display
+        // v-show 不支持 <template> 元素
         // v-if条件渲染
         // 如果渲染多个元素，就<template>元素当做不可见的包裹元素，并在上面使用v-if。最终的渲染结果将不包含<template>元素
         // <template v-if="ok">
@@ -192,7 +195,7 @@
         //         <li class="divider"></li>
         //     </template>
         // </ul>
-        // 使用v-if切换渲染元素是，如果条件都会有相同的元素，需要给元素添加key，这样就不会重复渲染
+        // 使用v-if切换渲染元素时，如果条件都会有相同的元素，需要给元素添加key，这样就不会重复渲染
         // v-show 不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换
 
         // 数组触发视图更新需要用数组的变异方法push()、pop()、shift()、unshift()、splice()、sort()、reverse()

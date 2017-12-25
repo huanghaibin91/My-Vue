@@ -16,6 +16,7 @@
         {{ message }}
         <!-- 在父组件作用域中自定义事件拥有触发父作用域中的事件，子作用域的数据会传递到绑定的函数中 -->
         <!-- 组件的根元素上监听一个父组件的原生事件。可以使用 v-on 的修饰符 .native -->
+        <!-- 组件不是HTML元素，所以给组件直接添加事件要用`.native`修饰，这样才可以触发事件 -->
         <hello ref="childComponent" :text="message" @childreverse="parentreverse" @click.native="sayHi"></hello>
         <!-- 在实例声明之后声明的组件不可用 -->
         <world></world>
@@ -125,6 +126,7 @@
 
         // slot，组件内容分发，slot是在父作用域中编译，使用的是父作用域的数据
         // 作用域插槽，让子组件可以在父组件进行分发时获取自己的数据，父级中，具有特殊特性 slot-scope 的 <template> 
+        // 类似于父传子的props属性，你可以把它理解成从子组件中向插槽实例中传递数据
         // 元素必须存在，表示它是作用域插槽的模板
     </script>
 </body>
